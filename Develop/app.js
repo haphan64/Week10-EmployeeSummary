@@ -33,6 +33,10 @@ const employeeQuestions = [
 
 function askForEmployeeRole() {
 
+    console.log("------------------");
+    console.log("Add a new team member");
+    console.log("------------------");
+
     inquirer
         .prompt({
                     message: "What is the employee's role?",
@@ -40,26 +44,57 @@ function askForEmployeeRole() {
                     type: "list",
                     choices: [
                         "Engineer",
-                        "Intern",
-                        "Manager"
+                        "Intern",                        
                     ]
                 })
         .then((response) => {
 
             if (response.role === "Engineer") {
-                askForEngineerInfo()               
-            } else if (response.role === "Intern") {
-                askForInternInfo()
-            } else if (response.role === "Manager") {
-                askForManagerInfo()
-            }
 
+                askForEngineerInfo()          
+
+            } else if (response.role === "Intern") {
+
+                askForInternInfo()
+
+            } 
+        });
+
+}
+
+function askToContinue () {
+    inquirer
+        .prompt({
+                    message: "Do you want to add another team member",
+                    name: "addNew",
+                    type: "list",
+                    choices: [
+                        "Yes",
+                        "No",                        
+                    ]                 
+                    
+                })
+        .then(({addNew}) => {
+
+            if (addNew == "Yes") {
+
+                askForEmployeeRole();              
+
+            } else {
+
+                createHtmlFile();           
+
+            }
         });
 
 }
 
 function askForEngineerInfo () {
-    
+
+    console.log("------------------");
+    console.log("Add a new Engineer");
+    console.log("------------------");
+
     inquirer
         .prompt([
             ...employeeQuestions,
@@ -69,12 +104,11 @@ function askForEngineerInfo () {
                 name: "github",
             }
         ])
-        .then((response) => {
-            
-            // Build a new Engineer object
-            // Add the new Engineer to a list
-            // employees.push(engineer);
-            console.log(response);
+        .then(({name, id, email, github}) => {                  
+              
+            employees.push(new Engineer (name, id, email, github));
+         
+            askToContinue();            
 
         })
     
@@ -82,6 +116,10 @@ function askForEngineerInfo () {
 
 function askForInternInfo () {
   
+    console.log("------------------");
+    console.log("Add a new Intern");
+    console.log("------------------");
+
     inquirer
         .prompt([
             ...employeeQuestions,
@@ -91,9 +129,11 @@ function askForInternInfo () {
                 name: "school",
             }
         ])
-        .then((response) => {
+        .then(({name, id, email, school}) => {
 
-            console.log(response);
+            employees.push(new Intern (name, id, email, school));
+         
+            askToContinue();
 
         });
             
@@ -101,6 +141,10 @@ function askForInternInfo () {
 
 function askForManagerInfo () {
     
+    console.log("------------------");
+    console.log("Add a new Manager");
+    console.log("------------------");
+
     inquirer
         .prompt([
             ...employeeQuestions,
@@ -110,15 +154,37 @@ function askForManagerInfo () {
                 name: "officeNumber",
             }
         ])
-        .then((response) => {
+        .then(({name, id, email, officeNumber}) => {
 
-            console.log(response);
+            employees.push(new Manager (name, id, email, officeNumber));
+         
+            askForEmployeeRole();
 
         })
             
 }
 
-askForEmployeeRole();
+function createHtmlFile () {
+
+    const html = render(employees); 
+
+    if ( ! fs.existsSync(OUTPUT_DIR)) {
+
+        fs.mkdirSync(OUTPUT_DIR);
+
+    }
+
+    fs.writeFile(outputPath, html, (err) => {
+
+        if (err) console.log(err);
+
+        else console.log ("HTML file created");
+
+    })
+
+}
+
+askForManagerInfo();
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
